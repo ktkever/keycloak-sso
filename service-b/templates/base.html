@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} · PlanIt</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='10' fill='%235eead4'/><text x='16' y='22' font-size='17' font-weight='800' text-anchor='middle' fill='%230b2f2c' font-family='sans-serif'>P</text></svg>">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('index') }}">
+      <span class="logo">P</span>
+      <span><b>PlanIt</b><small>팀 일정 캘린더</small></span>
+    </a>
+
+    <nav class="side-nav">
+      <a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint in ('index', 'event_detail', 'edit_event') }}">캘린더</a>
+      <a href="{{ url_for('new_event') }}" class="{{ 'active' if request.endpoint == 'new_event' }}">일정 추가</a>
+    </nav>
+
+    <div class="side-label">계정 · 보안</div>
+    <nav class="side-nav">
+      <a href="{{ url_for('session_info') }}" class="{{ 'active' if request.endpoint == 'session_info' }}">세션 정보</a>
+      <a href="{{ url_for('token_page') }}" class="{{ 'active' if request.endpoint == 'token_page' }}">ID 토큰 분석</a>
+      <a href="{{ url_for('ecdsa_page') }}" class="{{ 'active' if request.endpoint == 'ecdsa_page' }}">ECDSA 서명 검증</a>
+    </nav>
+
+    <div class="side-bottom">
+      <a class="ext-link" href="{{ other_service.url }}" title="다른 서비스로 이동 (같은 Keycloak 계정)">{{ other_service.name }} ↗</a>
+      <div class="me">
+        <span class="avatar">{{ user.display_name[:1] }}</span>
+        <span style="min-width: 0;">{{ user.display_name }}<small>{{ user.email or user.username }}</small></span>
+      </div>
+      <a class="logout" href="{{ url_for('auth.logout') }}">로그아웃</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <main class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<footer class="sso-strip">
+  <span class="tag">SSO 시연 정보</span>
+  Keycloak 세션 <code>{{ (user.kc_sid or '-')[:8] }}…</code>
+  · 비밀번호 인증 {{ user.auth_time | ts }}
+  · PlanIt 토큰 발급 {{ user.iat | ts }}
+  · <a href="{{ url_for('session_info') }}">자세히</a>
+</footer>
+</body>
+</html>

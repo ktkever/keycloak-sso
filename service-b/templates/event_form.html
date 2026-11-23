@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ '일정 수정' if editing else '일정 추가' }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ '일정 수정' if editing else '일정 추가' }}</h1></div>
+
+<div class="card narrow">
+  <form class="stack" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>제목
+      <input type="text" name="title" value="{{ form.title or '' }}" maxlength="100" required placeholder="예: 주간 회의">
+    </label>
+    <div class="row">
+      <label>날짜 <input type="date" name="date" value="{{ form.date or '' }}" required></label>
+      <label>시작 <input type="time" name="start_time" value="{{ form.start_time or '' }}"></label>
+      <label>종료 <input type="time" name="end_time" value="{{ form.end_time or '' }}"></label>
+    </div>
+    <p class="muted" style="margin: -6px 0 0;">시간을 비워 두면 종일 일정으로 등록됩니다.</p>
+    <div class="row">
+      <label>분류
+        <select name="category">
+          {% for name in categories %}
+          <option value="{{ name }}" {{ 'selected' if form.category == name }}>{{ name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>장소 <input type="text" name="location" value="{{ form.location or '' }}" maxlength="100" placeholder="예: 7호관 세미나실"></label>
+    </div>
+    <label>메모
+      <textarea name="memo" maxlength="2000" style="min-height: 120px;">{{ form.memo or '' }}</textarea>
+    </label>
+    <div class="actions">
+      <a class="btn btn-ghost" href="{{ url_for('event_detail', event_id=ev.id) if editing else url_for('index') }}">취소</a>
+      <button class="btn" type="submit">{{ '수정 완료' if editing else '등록' }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

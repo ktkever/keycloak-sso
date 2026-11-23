@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>ID 토큰 구조 (JWT = 헤더.페이로드.서명)</h2>
+  <p>
+    <code style="color:#d63384;">{{ parts.header[:30] }}…</code> .
+    <code style="color:#6f42c1;">{{ parts.payload[:30] }}…</code> .
+    <code style="color:#0d6efd;">{{ parts.signature[:30] }}…</code>
+  </p>
+  <p>서명 길이: Base64URL {{ parts.signature | length }}자</p>
+  <p><a href="{{ url_for('ecdsa_page') }}">→ ECDSA 서명 직접 검증 (ES256)</a></p>
+</div>
+
+<div class="card">
+  <h2>헤더 (서명 알고리즘)</h2>
+  <table>
+    {% for k, v in header.items() %}
+    <tr><th>{{ k }}</th><td><code>{{ v }}</code></td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>클레임 (토큰에 담긴 사용자 정보)</h2>
+  <table>
+    {% for k, v in claims.items() %}
+    <tr>
+      <th>{{ k }}</th>
+      <td>
+        <code>{{ v }}</code>
+        {% if k in time_claims %} → {{ v | ts }}{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

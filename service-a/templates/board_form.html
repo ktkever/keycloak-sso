@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ '글 수정' if editing else '글쓰기' }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ '글 수정' if editing else '글쓰기' }}</h1></div>
+
+<div class="card">
+  <form class="stack" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row">
+      <label style="flex: 0 0 180px;">카테고리
+        <select name="category">
+          {% for c in categories %}
+          <option value="{{ c }}" {{ 'selected' if form.category == c }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>제목
+        <input type="text" name="title" value="{{ form.title or '' }}" maxlength="100" required>
+      </label>
+    </div>
+    <label>내용
+      <textarea name="body" maxlength="5000" required>{{ form.body or '' }}</textarea>
+    </label>
+    <div class="actions">
+      <a class="btn btn-ghost" href="{{ url_for('post_detail', post_id=post.id) if editing else url_for('index') }}">취소</a>
+      <button class="btn" type="submit">{{ '수정 완료' if editing else '등록' }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

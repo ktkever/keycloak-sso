@@ -1,0 +1,5 @@
+flask
+authlib
+requests
+python-dotenv
+pyjwt[crypto]

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}ECDSA 서명 직접 검증{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('token_page') }}">← ID 토큰 분석</a></p>
+<div class="page-head"><h1>ECDSA 서명 직접 검증 (ES256)</h1></div>
+
+{% if error %}
+<div class="card">
+  <h2>ECDSA 직접 검증</h2>
+  <p>현재 토큰 알고리즘: <code>{{ header.alg }}</code></p>
+  <p style="color:#c00;">{{ error }}</p>
+</div>
+{% else %}
+<div class="card">
+  <h2>결과 요약</h2>
+  <table class="info">
+    <tr><th>직접 구현한 ECDSA 검증</th><td><b style="color:{{ '#059669' if m.valid else '#c00' }}">{{ '성공 ✔' if m.valid else '실패 ✘' }}</b></td></tr>
+    <tr><th>라이브러리(PyJWT) 검증</th><td><b style="color:{{ '#059669' if library_valid else '#c00' }}">{{ '성공 ✔' if library_valid else '실패 ✘' }}</b></td></tr>
+    <tr><th>변조 토큰 검증<br>(사용자 이름 → attacker)</th><td><b style="color:{{ '#c00' if not tampered.valid else '#059669' }}">{{ '실패 ✘ (변조 탐지)' if not tampered.valid else '성공' }}</b></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>1. 곡선과 공개키</h2>
+  <table class="info">
+    <tr><th>곡선</th><td>NIST P-256: y² = x³ − 3x + b (mod p)</td></tr>
+    <tr><th>p</th><td><code>{{ curve.p | hex }}</code></td></tr>
+    <tr><th>n (G의 위수)</th><td><code>{{ curve.n | hex }}</code></td></tr>
+    <tr><th>G</th><td><code>x = {{ curve.Gx | hex }}</code><br><code>y = {{ curve.Gy | hex }}</code></td></tr>
+    <tr><th>Keycloak 공개키 JWK</th><td><code>{{ jwk }}</code></td></tr>
+    <tr><th>공개키 Q = dG</th><td><code>x = {{ m.Q[0] | hex }}</code><br><code>y = {{ m.Q[1] | hex }}</code></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>2. 서명값 (r, s)와 메시지 m</h2>
+  <table class="info">
+    <tr><th>m</th><td><code>{{ m.message_preview }}</code> (JWT의 "헤더.페이로드")</td></tr>
+    <tr><th>r</th><td><code>{{ m.r | hex }}</code></td></tr>
+    <tr><th>s</th><td><code>{{ m.s | hex }}</code></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>3. 검증 계산</h2>
+  <table class="info">
+    <tr><th>H(m) = SHA-256(m)</th><td><code>{{ m.e | hex }}</code></td></tr>
+    <tr><th>w = s⁻¹ mod n</th><td><code>{{ m.w | hex }}</code><br>(확장 유클리드 알고리즘)</td></tr>
+    <tr><th>u₁ = H(m)·w mod n</th><td><code>{{ m.u1 | hex }}</code></td></tr>
+    <tr><th>u₂ = r·w mod n</th><td><code>{{ m.u2 | hex }}</code></td></tr>
+    <tr><th>X = u₁G + u₂Q</th><td><code>x = {{ m.X[0] | hex }}</code><br><code>y = {{ m.X[1] | hex }}</code></td></tr>
+    <tr><th>x(X) mod n</th><td><code>{{ m.v | hex }}</code></td></tr>
+    <tr><th>x(X) mod n == r ?</th><td><b>{{ m.valid }}</b></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>4. 변조 실험</h2>
+  <p>페이로드의 <code>preferred_username</code>을 <code>attacker</code>로 바꾸고 원래 서명 (r, s)를 그대로 붙였습니다.
+     H(m)이 달라져 u₁, u₂, X가 모두 바뀌므로 x(X) mod n ≠ r이 됩니다.</p>
+  <table class="info">
+    <tr><th>변조 후 H(m)</th><td><code>{{ tampered.e | hex }}</code></td></tr>
+    <tr><th>변조 후 x(X) mod n</th><td><code>{{ tampered.v | hex }}</code></td></tr>
+    <tr><th>r</th><td><code>{{ tampered.r | hex }}</code></td></tr>
+    <tr><th>결과</th><td><b style="color:#c00;">{{ tampered.valid }}</b></td></tr>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

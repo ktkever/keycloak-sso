@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ year }}년 {{ month }}월{% endblock %}
+{% block content %}
+<div class="grid-2">
+  <section class="card cal-card">
+    <div class="cal-head">
+      <h1>{{ year }}년 {{ month }}월</h1>
+      <div class="cal-nav">
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('index', y=prev_m[0], m=prev_m[1]) }}">‹ 이전</a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('index') }}">오늘</a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('index', y=next_m[0], m=next_m[1]) }}">다음 ›</a>
+      </div>
+    </div>
+
+    <div class="cal-grid">
+      {% for w in weekdays %}
+      <div class="cal-dow {{ 'sun' if loop.first }}{{ 'sat' if loop.last }}">{{ w }}</div>
+      {% endfor %}
+      {% for week in weeks %}{% for d in week %}
+      {% set key = d.isoformat() %}
+      {% set evs = by_date.get(key, []) %}
+      <div class="cal-cell {{ 'other' if d.month != month }} {{ 'today' if d == today }}">
+        <a class="cal-day {{ 'sun' if loop.first }}{{ 'sat' if loop.last }}" href="{{ url_for('new_event', date=key) }}"
+           title="{{ d.month }}월 {{ d.day }}일 일정 추가">{{ d.day }}</a>
+        {% for ev in evs[:3] %}
+        <a class="chip" style="--c: {{ categories[ev.category] }}" href="{{ url_for('event_detail', event_id=ev.id) }}"
+           title="{{ ev.title }}">{% if ev.start_time %}<b>{{ ev.start_time }}</b> {% endif %}{{ ev.title }}</a>
+        {% endfor %}
+        {% if evs | length > 3 %}<span class="more">+{{ evs | length - 3 }}개</span>{% endif %}
+      </div>
+      {% endfor %}{% endfor %}
+    </div>
+  </section>
+
+  <aside>
+    <a class="btn btn-block" href="{{ url_for('new_event') }}">+ 일정 추가</a>
+
+    <div class="card">
+      <h2>다가오는 일정</h2>
+      {% for ev in upcoming %}
+      <a class="up-item" href="{{ url_for('event_detail', event_id=ev.id) }}">
+        <span class="dot" style="--c: {{ categories[ev.category] }}"></span>
+        <span>
+          <b>{{ ev.title }}</b><br>
+          <span class="muted">{{ ev.date | kdate }} · {{ ev.start_time or '종일' }}{% if ev.location %} · {{ ev.location }}{% endif %}</span>
+        </span>
+      </a>
+      {% else %}
+      <p class="muted">예정된 일정이 없습니다.</p>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h2>분류</h2>
+      <div class="legend">
+        {% for name, color in categories.items() %}
+        <span><span class="dot" style="--c: {{ color }}"></span>{{ name }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

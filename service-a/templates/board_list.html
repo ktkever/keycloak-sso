@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}게시판{% endblock %}
+{% block subhead %}
+<div class="subhead">
+  <div class="subhead-inner page-head" style="margin-bottom: 0;">
+    <div>
+      <h1>팀 게시판 <span class="muted">{{ total }}개</span></h1>
+      <p>공지와 자료, 질문을 팀원과 공유하세요.</p>
+    </div>
+    <a class="btn" href="{{ url_for('new_post') }}">+ 글쓰기</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+
+<div class="toolbar">
+  <nav class="tabs">
+    <a href="{{ url_for('index', q=q or None) }}" class="{{ 'active' if not cat }}">전체</a>
+    {% for c in categories %}
+    <a href="{{ url_for('index', cat=c, q=q or None) }}" class="{{ 'active' if cat == c }}">{{ c }}</a>
+    {% endfor %}
+  </nav>
+  <form method="get" action="{{ url_for('index') }}" class="search">
+    {% if cat %}<input type="hidden" name="cat" value="{{ cat }}">{% endif %}
+    <input type="search" name="q" value="{{ q }}" placeholder="제목·내용 검색">
+    <button class="btn btn-ghost" type="submit">검색</button>
+  </form>
+</div>
+
+<div class="card list-card">
+  {% for p in posts %}
+  <a class="post-row {{ 'pinned' if p.category == '공지' }}" href="{{ url_for('post_detail', post_id=p.id) }}">
+    <span class="badge {{ 'notice' if p.category == '공지' }}">{{ p.category }}</span>
+    <span class="post-title">{{ p.title }}{% if p.comment_count %} <span class="count">[{{ p.comment_count }}]</span>{% endif %}</span>
+    <span class="post-meta">{{ p.author_name }}</span>
+    <span class="post-meta">{{ p.created_at | ts }}</span>
+    <span class="post-meta">조회 {{ p.views }}</span>
+  </a>
+  {% else %}
+  <p class="empty">{% if q %}"{{ q }}" 검색 결과가 없습니다.{% else %}첫 글을 작성해 보세요.{% endif %}</p>
+  {% endfor %}
+</div>
+
+{% if pages > 1 %}
+<nav class="pager">
+  {% for n in range(1, pages + 1) %}
+  <a href="{{ url_for('index', cat=cat or None, q=q or None, page=n) }}" class="{{ 'active' if n == page }}">{{ n }}</a>
+  {% endfor %}
+</nav>
+{% endif %}
+{% endblock %}

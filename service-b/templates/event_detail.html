@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.title }}{% endblock %}
+{% block content %}
+{% set d = ev.date.split('-') %}
+<p><a href="{{ url_for('index', y=d[0] | int, m=d[1] | int) }}">← 달력으로</a></p>
+
+<div class="card narrow">
+  <span class="badge" style="background: {{ categories[ev.category] }}22; color: {{ categories[ev.category] }};">{{ ev.category }}</span>
+  <h1 class="post-heading">{{ ev.title }}</h1>
+  <table class="info">
+    <tr><th>날짜</th><td>{{ ev.date | kdate }}</td></tr>
+    <tr><th>시간</th><td>{% if ev.start_time %}{{ ev.start_time }}{% if ev.end_time %} ~ {{ ev.end_time }}{% endif %}{% else %}종일{% endif %}</td></tr>
+    <tr><th>장소</th><td>{{ ev.location or '-' }}</td></tr>
+    <tr><th>등록자</th><td>{{ ev.author_name }} · {{ ev.created_at | ts }}</td></tr>
+  </table>
+  {% if ev.memo %}<div class="post-body">{{ ev.memo }}</div>{% endif %}
+
+  {% if ev.author_sub == user.sub %}
+  <div class="actions">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('edit_event', event_id=ev.id) }}">수정</a>
+    <form class="inline" method="post" action="{{ url_for('delete_event', event_id=ev.id) }}"
+          onsubmit="return confirm('이 일정을 삭제할까요?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-danger btn-sm" type="submit">삭제</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

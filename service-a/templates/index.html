@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>내 메모</h2>
+  <p>로그인한 사용자(sub)별로 메모를 따로 저장합니다. 다른 사용자로 로그인하면 다른 메모가 보입니다.</p>
+  <form method="post" action="{{ url_for('add_memo') }}">
+    <input type="text" name="text" placeholder="메모 입력" required maxlength="200">
+    <button type="submit">추가</button>
+  </form>
+  <table style="margin-top: 16px;">
+    {% for memo in memos %}
+    <tr>
+      <td style="width: 160px; color: #888;">{{ memo.created | ts }}</td>
+      <td>{{ memo.text }}</td>
+      <td style="width: 60px;">
+        <form method="post" action="{{ url_for('delete_memo', idx=loop.index0) }}">
+          <button type="submit">삭제</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td>아직 메모가 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}
